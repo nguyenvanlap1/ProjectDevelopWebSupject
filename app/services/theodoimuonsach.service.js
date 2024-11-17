@@ -28,7 +28,7 @@ async create(payload) {
         const muonsach = this.extractMuonSachData(payload);
         const result = await this.MuonSach.findOneAndUpdate(
             muonsach,
-            {},
+            {$set: muonsach},
             { returnDocument: 'after', upsert: true }
         );
         return result;

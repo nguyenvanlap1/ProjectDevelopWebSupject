@@ -29,7 +29,7 @@ async create(payload) {
         const sach = this.extractSachData(payload);
         const result = await this.Sach.findOneAndUpdate(
             sach,
-            {},
+            {$set: sach},
             { returnDocument: 'after', upsert: true }
         );
         return result;

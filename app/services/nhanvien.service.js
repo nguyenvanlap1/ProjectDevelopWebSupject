@@ -28,7 +28,7 @@ async create(payload) {
         const nhanvien = this.extractNhanVienData(payload);
         const result = await this.NhanVien.findOneAndUpdate(
             nhanvien,
-            {},
+            {$set: nhanvien},
             { returnDocument: 'after', upsert: true }
         );
         return result;

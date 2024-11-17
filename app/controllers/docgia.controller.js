@@ -1,10 +1,18 @@
 const MongoDB = require('../utils/mongodb.util');
 const DocGiaService = require('../services/docgia.service');
+const NhaXuatBanService = require('../services/nhaxuatban.service');
 const ApiError = require('../api-error');
 
 exports.create = async (req, res, next) => { 
     try {
         const docGiaService = new DocGiaService(MongoDB.client); 
+        const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
+        manhaxuatban = req.body.manhaxuatban;
+        if(nhaxuatbanService.findById(manhaxuatban)) {
+            return next(
+                new ApiError(404, "NXB not found")
+            )
+        }
         const result = await docGiaService.create(req.body); 
         res.status(201).send(result); 
     } 

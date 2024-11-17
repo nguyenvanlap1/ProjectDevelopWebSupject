@@ -19,12 +19,13 @@ exports.findAll = async (req, res, next) => {
     let results = [];
     try {
         const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
-        const {tennxb} = req.query;
+        const tennxb = req.body.tennxb;
         if(tennxb) {
             results = await nhaxuatbanService.findByName(tennxb);
         } else {
             results = await nhaxuatbanService.find({});
         }
+        res.send(results);
     } catch(error){
         return next(
             new ApiError(500, 'An error occurred while retrieving contacts')

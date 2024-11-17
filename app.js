@@ -17,9 +17,9 @@ app.use('/api/contacts', contactsRouter);
 
 app.use('/api/nhaxuatban', nhaxuatbanRouter);
 app.use('/api/sach', sachRouter);
-app.use('/api/nhaxuatban', sachRouter);
-app.use('/api/nhaxuatban', nhaxuatbanRouter);
-app.use('/api/nhaxuatban', nhaxuatbanRouter);
+app.use('/api/theodoimuonsach', sachRouter);
+app.use('/api/nhanvien', nhaxuatbanRouter);
+app.use('/api/docgia', nhaxuatbanRouter);
 
 
 app.use((req, res, next) => {

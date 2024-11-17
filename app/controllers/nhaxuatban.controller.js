@@ -58,7 +58,7 @@ exports.update = async (req, res, next) => {
         if(!result) {
             return next(new ApiError(404, 'Contact not found'));
         }
-        return res.send({message: 'NXB was updated suscessfully'});
+        return res.send(result);
     } catch(error) {
         return next (new ApiError(500, `Error updating with id=${req.params.id}: ${error}`));
     }
@@ -71,17 +71,23 @@ exports.delete = async (req, res, next) => {
         if(!result) {
             return next(new ApiError(404, 'nxb not found'));
         }
-        return res.send({message: 'Contact was deleted suscessfully'});
+        return res.send({message: `nxb was deleted suscessfully`});
     } catch(error) {
-        return next(new ApiError(500, `Could not delete contact with id=${req.params.id}`));
+        return next(new ApiError(500, `Could not delete nxb with id=${req.params.id}`));
     }
 };
 
 exports.deleteAll = async (req, res, next) =>  {
-    res.send({message: "delete all nhaxuatban"})
-};
-
-exports.findAllFavorite = async (req, res, next) => {
-    res.send({message: "find all favorite nhaxuatban"})
+    try {
+        const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
+        const deleteCount = await nhaxuatbanService.deleteAll();
+        return res.send({
+            message: `${deleteCount} nxb were deleted sucessfully`
+        })
+    } catch(error) {
+         return next(
+            new ApiError(500, `An error occurred while removing all nxb: ${error}`)
+        )
+    }
 };
 // file controller

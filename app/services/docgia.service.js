@@ -8,7 +8,7 @@ class DocGiaService {
     // Định nghĩa các phương thức
 extractDocGiaData(payload) {
     // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
-    if (!payload.holot || !payload.ten || !payload.ngaysinh || !payload.phai || !payload.diachi || !payload.dien) {
+    if (!payload.holot || !payload.ten || !payload.ngaysinh || !payload.phai || !payload.diachi || !payload.dienthoai) {
         throw new Error("Missing required fields: 'holot', 'ten', 'ngaysinh', 'phai', 'diachi', and/or 'dien'");
     }
 
@@ -18,7 +18,7 @@ extractDocGiaData(payload) {
         ngaysinh: payload.ngaysinh,
         phai: payload.phai,
         diachi: payload.diachi,
-        dien: payload.dien
+        dienthoai: payload.dienthoai
     };
 
     return docgia;

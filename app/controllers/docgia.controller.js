@@ -7,13 +7,7 @@ exports.create = async (req, res, next) => {
 };
 
 exports.findAll = async (req, res, next) => {
-<<<<<<< HEAD
-    let documents = [];
-    
-    res.send(documents);
-=======
     res.send({message: "find all docgia"})
->>>>>>> efc28df7b7977feb8bface049e6f33872251d0bd
 };
 
 exports.findOne = async (req, res, next) => {

@@ -16,7 +16,20 @@ exports.create = async (req, res, next) => {
 }
 
 exports.findAll = async (req, res, next) => {
-    res.send({message: "find all nhaxuatban"})
+    let results = [];
+    try {
+        const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
+        const {tennxb} = req.query;
+        if(tennxb) {
+            results = await nhaxuatbanService.findByName(tennxb);
+        } else {
+            results = await nhaxuatbanService.find({});
+        }
+    } catch(error){
+        return next(
+            new ApiError(500, 'An error occurred while retrieving contacts')
+        )
+    }
 };
 
 exports.findOne = async (req, res, next) => {

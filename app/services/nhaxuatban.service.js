@@ -52,7 +52,8 @@ async create(payload) {
     }
 
     async update(id, payload) {
-        const filter = {
+        try {
+            const filter = {
             _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
         };
         const update = this.extractNhaXuatBanData(payload);
@@ -62,6 +63,9 @@ async create(payload) {
             { returnDocument: 'after' }
         );
         return result;
+       } catch(error) {
+        throw new Error(`Failed to update: ${error.message}`);
+       }
     }
 
     async delete(id) {

@@ -28,13 +28,23 @@ exports.findAll = async (req, res, next) => {
         res.send(results);
     } catch(error){
         return next(
-            new ApiError(500, 'An error occurred while retrieving contacts')
+            new ApiError(500, 'An error occurred while retrieving NXB')
         )
     }
 };
 
 exports.findOne = async (req, res, next) => {
-    res.send({message: "find one nhaxuatban"})
+    try {
+        const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
+        const id = req.params.id
+        const result = await nhaxuatbanService.findById(id);
+        if(! result) {
+            return next(new ApiError(404, "NXB not found"))
+        }
+        res.send(result);
+    } catch(error) {
+        return next( new ApiError(500, `error retrieving NXB with id=${req.params.id}`))
+    }
 };
 
 exports.update = async (req, res, next) => {

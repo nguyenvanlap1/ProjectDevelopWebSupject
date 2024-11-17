@@ -1,5 +1,5 @@
 const express = require('express');
-const theodoimuonsach   = require('./controllers/theodoimuonsach.controller');
+const theodoimuonsach = require('../controllers/theodoimuonsach.controller');
 
 const router = express.Router();
 

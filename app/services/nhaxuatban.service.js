@@ -7,18 +7,21 @@ class NhaXuatBanService {
 
     // Define methods below
     extractNhaXuatBanData(payload) {
-        const nhaxuatban = {
-            tennxb: payload.tennxb,
-            diachi: payload.diachi
-        };
-
-        Object.keys(nhaxuatban).forEach((key) => {
-            nhaxuatban[key] === undefined && delete nhaxuatban[key];
-        });
-        return nhaxuatban;
+    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+    if (!payload.tennxb || !payload.diachi) {
+        throw new Error("Missing required fields: 'tennxb' and/or 'diachi'");
     }
 
-    async create(payload) {
+    const nhaxuatban = {
+        tennxb: payload.tennxb,
+        diachi: payload.diachi
+    };
+
+    return nhaxuatban;
+    }
+
+async create(payload) {
+    try {
         const nhaxuatban = this.extractNhaXuatBanData(payload);
         const result = await this.NhaXuatBan.findOneAndUpdate(
             nhaxuatban,
@@ -26,7 +29,10 @@ class NhaXuatBanService {
             { returnDocument: 'after', upsert: true }
         );
         return result;
+    } catch (error) {
+        throw new Error(`Failed to create: ${error.message}`);
     }
+}
 
     async find(filter) {
         const cursor = await this.NhaXuatBan.find(filter);

@@ -6,22 +6,25 @@ class MuonSachService {
     }
 
     // Định nghĩa phương thức trích xuất dữ liệu mượn sách
-    extractMuonSachData(payload) {
-        const muonsach = {
-            madocgia: payload.madocgia,
-            masach: payload.masach,
-            ngaymuon: payload.ngaymuon,
-            ngaytra: payload.ngaytra,
-            manhanvien: payload.manhanvien
-        };
-
-        Object.keys(muonsach).forEach((key) => {
-            muonsach[key] === undefined && delete muonsach[key];
-        });
-        return muonsach;
+extractMuonSachData(payload) {
+    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+    if (!payload.madocgia || !payload.masach || !payload.ngaymuon || !payload.ngaytra || !payload.manhanvien) {
+        throw new Error("Missing required fields: 'madocgia', 'masach', 'ngaymuon', 'ngaytra', and/or 'manhanvien'");
     }
 
-    async create(payload) {
+    const muonsach = {
+        madocgia: payload.madocgia,
+        masach: payload.masach,
+        ngaymuon: payload.ngaymuon,
+        ngaytra: payload.ngaytra,
+        manhanvien: payload.manhanvien
+    };
+
+    return muonsach;
+}
+
+async create(payload) {
+    try {
         const muonsach = this.extractMuonSachData(payload);
         const result = await this.MuonSach.findOneAndUpdate(
             muonsach,
@@ -29,7 +32,10 @@ class MuonSachService {
             { returnDocument: 'after', upsert: true }
         );
         return result;
+    } catch (error) {
+        throw new Error(`Failed to create: ${error.message}`);
     }
+}
 
     async find(filter) {
         const cursor = await this.MuonSach.find(filter);

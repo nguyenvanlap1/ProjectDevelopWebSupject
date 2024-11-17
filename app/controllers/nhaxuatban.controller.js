@@ -6,17 +6,11 @@ exports.create = async (req, res, next) => {
     try {
         const nhaxuatbanService = new NhaXuatBanService(MongoDB.client); 
         const result = await nhaxuatbanService.create(req.body); 
-        if (result.error) { 
-            return next(
-                new ApiError(400, result.error)
-            )
-        } else { 
-            res.status(201).send(result); 
-        } 
+        res.status(201).send(result); 
     } 
     catch (error) { 
         return next(
-            new ApiError(500, 'An error occurred while creating nxb')
+            new ApiError(500, error.message)
         );
     }
 }

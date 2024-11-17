@@ -25,7 +25,7 @@ async create(payload) {
         const nhaxuatban = this.extractNhaXuatBanData(payload);
         const result = await this.NhaXuatBan.findOneAndUpdate(
             nhaxuatban,
-            {},
+            {$set: nhaxuatban},
             { returnDocument: 'after', upsert: true }
         );
         return result;

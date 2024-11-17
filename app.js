@@ -16,11 +16,19 @@ app.get('/', (req, res) => {
     res.json({ message: "Welcome to contactbook application." });
 });
 
+<<<<<<< HEAD
 // app.use('/api/nhaxuatban', nhaxuatbanRouter);
 // app.use('/api/sach', sachRouter);
 // app.use('/api/theodoimuonsach', theodoimuonsachRouter);
 // app.use('/api/nhanvien', nhanvienRouter);
 // app.use('/api/docgia', docgiaRouter);
+=======
+app.use('/api/nhaxuatban', nhaxuatbanRouter);
+app.use('/api/sach', sachRouter);
+app.use('/api/theodoimuonsach', sachRouter);
+app.use('/api/nhanvien', nhaxuatbanRouter);
+app.use('/api/docgia', nhaxuatbanRouter);
+>>>>>>> efc28df7b7977feb8bface049e6f33872251d0bd
 
 app.use((req, res, next) => {
     return next(new ApiError(404, "Resource not found"));

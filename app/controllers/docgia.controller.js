@@ -26,7 +26,4 @@ exports.deleteAll = async (req, res, next) =>  {
     res.send({message: "delete all docgia"})
 };
 
-exports.findAllFavorite = async (req, res, next) => {
-    res.send({message: "find all favorite"})
-};
 // file controller

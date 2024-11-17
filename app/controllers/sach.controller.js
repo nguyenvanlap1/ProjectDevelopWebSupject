@@ -26,7 +26,4 @@ exports.deleteAll = async (req, res, next) =>  {
     res.send({message: "delete all sach"})
 };
 
-exports.findAllFavorite = async (req, res, next) => {
-    res.send({message: "find all favorite sach"})
-};
 // file controller

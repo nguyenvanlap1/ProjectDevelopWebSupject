@@ -1,6 +1,6 @@
-const MongoDB = require('../../utils/mongodb.util');
-const ContactService = require('../../services/contact.service');
-const ApiError = require('../../api-error');
+const MongoDB = require('../utils/mongodb.util');
+const ContactService = require('../services/contact.service');
+const ApiError = require('../api-error');
 
 exports.create = async (req, res, next) => {
     res.send({message:"create nhaxuatban"});

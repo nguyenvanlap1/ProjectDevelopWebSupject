@@ -48,7 +48,19 @@ exports.findOne = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-    res.send({message: "update nhaxuatban"})
+    if(Object.keys(req.body) === 0) {
+        return next(new ApiError(400, 'Data to update canot be empty'));
+    }
+    try {
+        const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
+        const result = await nhaxuatbanService.update(req.params.id, req.body);
+        if(!result) {
+            return next(new ApiError(404, 'Contact not found'));
+        }
+        return res.send({message: 'NXB was updated suscessfully'});
+    } catch(error) {
+        return new ApiError(500, `Error updating with id=${req.params.id}`);
+    }
 };
 
 exports.delete = async (req, res, next) => {

@@ -5,24 +5,27 @@ class DocGiaService {
         this.DocGia = client.db().collection('docgia');
     }
 
-    // Define methods below
-    extractDocGiaData(payload) {
-        const docgia = {
-            holot: payload.holot,
-            ten: payload.ten,
-            ngaysinh: payload.ngaysinh,
-            phai: payload.phai,
-            diachi: payload.diachi,
-            dien: payload.dien
-        };
-
-        Object.keys(docgia).forEach((key) => {
-            docgia[key] === undefined && delete docgia[key];
-        });
-        return docgia;
+    // Định nghĩa các phương thức
+extractDocGiaData(payload) {
+    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+    if (!payload.holot || !payload.ten || !payload.ngaysinh || !payload.phai || !payload.diachi || !payload.dien) {
+        throw new Error("Missing required fields: 'holot', 'ten', 'ngaysinh', 'phai', 'diachi', and/or 'dien'");
     }
 
-    async create(payload) {
+    const docgia = {
+        holot: payload.holot,
+        ten: payload.ten,
+        ngaysinh: payload.ngaysinh,
+        phai: payload.phai,
+        diachi: payload.diachi,
+        dien: payload.dien
+    };
+
+    return docgia;
+}
+
+async create(payload) {
+    try {
         const docgia = this.extractDocGiaData(payload);
         const result = await this.DocGia.findOneAndUpdate(
             docgia,
@@ -30,7 +33,10 @@ class DocGiaService {
             { returnDocument: 'after', upsert: true }
         );
         return result;
+    } catch (error) {
+        throw new Error(`Failed to create: ${error.message}`);
     }
+}
 
     async find(filter) {
         const cursor = await this.DocGia.find(filter);

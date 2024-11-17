@@ -5,23 +5,26 @@ class NhanVienService {
         this.NhanVien = client.db().collection('nhanvien');
     }
 
-    // Define methods below
-    extractNhanVienData(payload) {
-        const nhanvien = {
-            hotennv: payload.hotennv,
-            password: payload.password,
-            chucvu: payload.chucvu,
-            diachi: payload.diachi,
-            sodienthoai: payload.sodienthoai
-        };
-
-        Object.keys(nhanvien).forEach((key) => {
-            nhanvien[key] === undefined && delete nhanvien[key];
-        });
-        return nhanvien;
+    // Định nghĩa các phương thức
+extractNhanVienData(payload) {
+    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+    if (!payload.hotennv || !payload.password || !payload.chucvu || !payload.diachi || !payload.sodienthoai) {
+        throw new Error("Missing required fields: 'hotennv', 'password', 'chucvu', 'diachi', and/or 'sodienthoai'");
     }
 
-    async create(payload) {
+    const nhanvien = {
+        hotennv: payload.hotennv,
+        password: payload.password,
+        chucvu: payload.chucvu,
+        diachi: payload.diachi,
+        sodienthoai: payload.sodienthoai
+    };
+
+    return nhanvien;
+}
+
+async create(payload) {
+    try {
         const nhanvien = this.extractNhanVienData(payload);
         const result = await this.NhanVien.findOneAndUpdate(
             nhanvien,
@@ -29,7 +32,10 @@ class NhanVienService {
             { returnDocument: 'after', upsert: true }
         );
         return result;
+    } catch (error) {
+        throw new Error(`Failed to create: ${error.message}`);
     }
+}
 
     async find(filter) {
         const cursor = await this.NhanVien.find(filter);

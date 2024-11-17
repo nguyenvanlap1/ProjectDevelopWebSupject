@@ -6,23 +6,26 @@ class SachService {
     }
 
     // Định nghĩa lại phương thức trích xuất dữ liệu sách
-    extractSachData(payload) {
-        const sach = {
-            tensach: payload.tensach,
-            dongia: payload.dongia,
-            soquyen: payload.soquyen,
-            namxuatban: payload.namxuatban,
-            manhaxuatban: payload.manhaxuatban,
-            nguongoc_tacgia: payload.nguongoc_tacgia
-        };
-
-        Object.keys(sach).forEach((key) => {
-            sach[key] === undefined && delete sach[key];
-        });
-        return sach;
+extractSachData(payload) {
+    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+    if (!payload.tensach || !payload.dongia || !payload.soquyen || !payload.namxuatban || !payload.manhaxuatban || !payload.nguongoc_tacgia) {
+        throw new Error("Missing required fields: 'tensach', 'dongia', 'soquyen', 'namxuatban', 'manhaxuatban', and/or 'nguongoc_tacgia'");
     }
 
-    async create(payload) {
+    const sach = {
+        tensach: payload.tensach,
+        dongia: payload.dongia,
+        soquyen: payload.soquyen,
+        namxuatban: payload.namxuatban,
+        manhaxuatban: payload.manhaxuatban,
+        nguongoc_tacgia: payload.nguongoc_tacgia
+    };
+
+    return sach;
+}
+
+async create(payload) {
+    try {
         const sach = this.extractSachData(payload);
         const result = await this.Sach.findOneAndUpdate(
             sach,
@@ -30,7 +33,10 @@ class SachService {
             { returnDocument: 'after', upsert: true }
         );
         return result;
+    } catch (error) {
+        throw new Error(`Failed to create: ${error.message}`);
     }
+}
 
     async find(filter) {
         const cursor = await this.Sach.find(filter);

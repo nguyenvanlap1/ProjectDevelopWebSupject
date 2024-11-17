@@ -90,8 +90,4 @@ exports.deleteAll = async (req, res, next) =>  {
         )
     }
 };
-
-exports.findAllFavorite = async (req, res, next) => {
-
-}
 // file controller

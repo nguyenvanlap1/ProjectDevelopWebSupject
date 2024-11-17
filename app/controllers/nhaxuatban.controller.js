@@ -38,7 +38,7 @@ exports.findOne = async (req, res, next) => {
         const nhaxuatbanService = new NhaXuatBanService(MongoDB.client);
         const id = req.params.id
         const result = await nhaxuatbanService.findById(id);
-        if(! result) {
+        if( result.length === 0) {
             return next(new ApiError(404, "NXB not found"))
         }
         res.send(result);

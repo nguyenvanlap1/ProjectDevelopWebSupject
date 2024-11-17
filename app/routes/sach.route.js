@@ -8,9 +8,6 @@ router.route("/")
     .post(sach.create)
     .delete(sach.deleteAll);
 
-router.route("/favorite")
-    .get(sach.findAllFavorite);
-
 router.route("/:id")
     .get(sach.findOne)
     .put(sach.update)

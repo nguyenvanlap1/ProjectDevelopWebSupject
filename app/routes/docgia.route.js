@@ -8,9 +8,6 @@ router.route("/")
     .post(docgia.create)
     .delete(docgia.deleteAll);
 
-router.route("/favorite")
-    .get(docgia.findAllFavorite);
-
 router.route("/:id")
     .get(docgia.findOne)
     .put(docgia.update)

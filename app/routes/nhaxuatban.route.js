@@ -8,9 +8,6 @@ router.route("/")
     .post(nhaxuatban.create)
     .delete(nhaxuatban.deleteAll);
 
-router.route("/favorite")
-    .get(nhaxuatban.findAllFavorite);
-
 router.route("/:id")
     .get(nhaxuatban.findOne)
     .put(nhaxuatban.update)

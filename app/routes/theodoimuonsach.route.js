@@ -8,12 +8,9 @@ router.route("/")
     .post(theodoimuonsach.create)
     .delete(theodoimuonsach.deleteAll);
 
-router.route("/favorite")
-    .get(theodoimuonsach.findAllFavorite);
-
 router.route("/:id")
     .get(theodoimuonsach.findOne)
     .put(theodoimuonsach.update)
     .delete(theodoimuonsach.delete);
-    
+
 module.exports=router;

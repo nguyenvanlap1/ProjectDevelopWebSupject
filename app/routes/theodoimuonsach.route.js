@@ -15,5 +15,5 @@ router.route("/:id")
     .get(theodoimuonsach.findOne)
     .put(theodoimuonsach.update)
     .delete(theodoimuonsach.delete);
-
+    
 module.exports=router;

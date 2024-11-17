@@ -1,87 +1,91 @@
-const { ObjectId } = require('mongodb');
+const MongoDB = require('../utils/mongodb.util');
+const DocGiaService = require('../services/docgia.service');
+const ApiError = require('../api-error');
 
-class DocGiaService {
-    constructor(client) {
-        this.DocGia = client.db().collection('docgia');
-    }
-
-    // Định nghĩa các phương thức
-extractDocGiaData(payload) {
-    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
-    if (!payload.holot || !payload.ten || !payload.ngaysinh || !payload.phai || !payload.diachi || !payload.dien) {
-        throw new Error("Missing required fields: 'holot', 'ten', 'ngaysinh', 'phai', 'diachi', and/or 'dien'");
-    }
-
-    const docgia = {
-        holot: payload.holot,
-        ten: payload.ten,
-        ngaysinh: payload.ngaysinh,
-        phai: payload.phai,
-        diachi: payload.diachi,
-        dien: payload.dien
-    };
-
-    return docgia;
-}
-
-async create(payload) {
+exports.create = async (req, res, next) => { 
     try {
-        const docgia = this.extractDocGiaData(payload);
-        const result = await this.DocGia.findOneAndUpdate(
-            docgia,
-            {},
-            { returnDocument: 'after', upsert: true }
+        const docGiaService = new DocGiaService(MongoDB.client); 
+        const result = await docGiaService.create(req.body); 
+        res.status(201).send(result); 
+    } 
+    catch (error) { 
+        return next(
+            new ApiError(500, error.message)
         );
-        return result;
-    } catch (error) {
-        throw new Error(`Failed to create: ${error.message}`);
     }
 }
 
-    async find(filter) {
-        const cursor = await this.DocGia.find(filter);
-        return await cursor.toArray();
+exports.findAll = async (req, res, next) => {
+    let results = [];
+    try {
+        const docGiaService = new DocGiaService(MongoDB.client);
+        const ten = req.body.ten;
+        if(ten) {
+            results = await docGiaService.findByName(ten);
+        } else {
+            results = await docGiaService.find({});
+        }
+        res.send(results);
+    } catch(error){
+        return next(
+            new ApiError(500, `An error occurred while retrieving readers: ${error}`)
+        )
     }
+};
 
-    async findByName(name) {
-        return await this.find({
-            ten: { $regex: new RegExp(new RegExp(name)), $options: 'i' }
-        });
+exports.findOne = async (req, res, next) => {
+    try {
+        const docGiaService = new DocGiaService(MongoDB.client);
+        const id = req.params.id;
+        const result = await docGiaService.findById(id);
+        if( result.length === 0) {
+            return next(new ApiError(404, "Reader not found"))
+        }
+        res.send(result);
+    } catch(error) {
+        return next( new ApiError(500, `Error retrieving reader with id=${req.params.id}: ${error}`))
     }
+};
 
-    async findById(id) {
-        return await this.find({
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
-        });
+exports.update = async (req, res, next) => {
+    if(Object.keys(req.body).length === 0) {
+        return next(new ApiError(400, 'Data to update cannot be empty'));
     }
-
-    async update(id, payload) {
-        const filter = {
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
-        };
-        const update = this.extractDocGiaData(payload);
-        const result = await this.DocGia.findOneAndUpdate(
-            filter,
-            { $set: update },
-            { returnDocument: 'after' }
-        );
-        return result;
+    try {
+        const docGiaService = new DocGiaService(MongoDB.client);
+        const result = await docGiaService.update(req.params.id, req.body);
+        if(!result) {
+            return next(new ApiError(404, 'Reader not found'));
+        }
+        return res.send(result);
+    } catch(error) {
+        return next (new ApiError(500, `Error updating reader with id=${req.params.id}: ${error}`));
     }
+};
 
-    async delete(id) {
-        const filter = {
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
-        };
-        const result = await this.DocGia.findOneAndDelete(
-            filter
-        );
-        return result;
+exports.delete = async (req, res, next) => {
+    try {
+        const docGiaService = new DocGiaService(MongoDB.client);
+        const result = await docGiaService.delete(req.params.id);
+        if(!result) {
+            return next(new ApiError(404, 'Reader not found'));
+        }
+        return res.send({message: `Reader was deleted successfully`});
+    } catch(error) {
+        return next(new ApiError(500, `Could not delete reader with id=${req.params.id}`));
     }
+};
 
-    async deleteAll() {
-        const result = await this.DocGia.deleteMany({});
-        return result.deletedCount;
+exports.deleteAll = async (req, res, next) =>  {
+    try {
+        const docGiaService = new DocGiaService(MongoDB.client);
+        const deleteCount = await docGiaService.deleteAll();
+        return res.send({
+            message: `${deleteCount} readers were deleted successfully`
+        })
+    } catch(error) {
+         return next(
+            new ApiError(500, `An error occurred while removing all readers: ${error}`)
+        )
     }
-}
-
-module.exports = DocGiaService;
+};

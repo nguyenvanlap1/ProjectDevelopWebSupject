@@ -1,31 +1,27 @@
 const { ObjectId } = require('mongodb');
 
-class DocGiaService {
+class NhaXuatBanService {
     constructor(client) {
-        this.DocGia = client.db().collection('docgia');
+        this.NhaXuatBan = client.db().collection('nhaxuatban');
     }
 
     // Define methods below
-    extractDocGiaData(payload) {
-        const docgia = {
-            holot: payload.holot,
-            ten: payload.ten,
-            ngaysinh: payload.ngaysinh,
-            phai: payload.phai,
-            diachi: payload.diachi,
-            dien: payload.dien
+    extractNhaXuatBanData(payload) {
+        const nhaxuatban = {
+            tennxb: payload.tennxb,
+            diachi: payload.diachi
         };
 
-        Object.keys(docgia).forEach((key) => {
-            docgia[key] === undefined && delete docgia[key];
+        Object.keys(nhaxuatban).forEach((key) => {
+            nhaxuatban[key] === undefined && delete nhaxuatban[key];
         });
-        return docgia;
+        return nhaxuatban;
     }
 
     async create(payload) {
-        const docgia = this.extractDocGiaData(payload);
-        const result = await this.DocGia.findOneAndUpdate(
-            docgia,
+        const nhaxuatban = this.extractNhaXuatBanData(payload);
+        const result = await this.NhaXuatBan.findOneAndUpdate(
+            nhaxuatban,
             {},
             { returnDocument: 'after', upsert: true }
         );
@@ -33,13 +29,13 @@ class DocGiaService {
     }
 
     async find(filter) {
-        const cursor = await this.DocGia.find(filter);
+        const cursor = await this.NhaXuatBan.find(filter);
         return await cursor.toArray();
     }
 
     async findByName(name) {
         return await this.find({
-            ten: { $regex: new RegExp(new RegExp(name)), $options: 'i' }
+            tennxb: { $regex: new RegExp(new RegExp(name)), $options: 'i' }
         });
     }
 
@@ -53,8 +49,8 @@ class DocGiaService {
         const filter = {
             _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
         };
-        const update = this.extractDocGiaData(payload);
-        const result = await this.DocGia.findOneAndUpdate(
+        const update = this.extractNhaXuatBanData(payload);
+        const result = await this.NhaXuatBan.findOneAndUpdate(
             filter,
             { $set: update },
             { returnDocument: 'after' }
@@ -66,16 +62,16 @@ class DocGiaService {
         const filter = {
             _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
         };
-        const result = await this.DocGia.findOneAndDelete(
+        const result = await this.NhaXuatBan.findOneAndDelete(
             filter
         );
         return result;
     }
 
     async deleteAll() {
-        const result = await this.DocGia.deleteMany({});
+        const result = await this.NhaXuatBan.deleteMany({});
         return result.deletedCount;
     }
 }
 
-module.exports = DocGiaService;
+module.exports = NhaXuatBanService;

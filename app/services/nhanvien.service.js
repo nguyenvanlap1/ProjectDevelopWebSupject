@@ -12,8 +12,7 @@ class NhanVienService {
             password: payload.password,
             chucvu: payload.chucvu,
             diachi: payload.diachi,
-            sodienthoai: payload.sodienthoai,
-            favorite: payload.favorite
+            sodienthoai: payload.sodienthoai
         };
 
         Object.keys(nhanvien).forEach((key) => {
@@ -26,7 +25,7 @@ class NhanVienService {
         const nhanvien = this.extractNhanVienData(payload);
         const result = await this.NhanVien.findOneAndUpdate(
             nhanvien,
-            { $set: { favorite: nhanvien.favorite === true } },
+            {},
             { returnDocument: 'after', upsert: true }
         );
         return result;
@@ -70,12 +69,6 @@ class NhanVienService {
             filter
         );
         return result;
-    }
-
-    async findFavorite() {
-        const cursor = this.NhanVien.find({ favorite: true });
-        const results = await cursor.toArray();
-        return results;
     }
 
     async deleteAll() {

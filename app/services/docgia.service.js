@@ -1,42 +1,45 @@
-const { ObjectId } = require('mongodb');
-
 class DocGiaService {
     constructor(client) {
         this.DocGia = client.db().collection('docgia');
     }
 
-    // Định nghĩa các phương thức
-extractDocGiaData(payload) {
-    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
-    if (!payload.holot || !payload.ten || !payload.ngaysinh || !payload.phai || !payload.diachi || !payload.dienthoai) {
-        throw new Error("Missing required fields: 'holot', 'ten', 'ngaysinh', 'phai', 'diachi', and/or 'dien'");
+    // Định nghĩa các phương thức trích xuất dữ liệu độc giả
+    extractDocGiaData(payload) {
+        // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+        if (!payload.madocgia || !payload.holot || !payload.ten || !payload.ngaysinh || !payload.phai || !payload.diachi || !payload.dienthoai) {
+            throw new Error("Missing required fields: 'madocgia', 'holot', 'ten', 'ngaysinh', 'phai', 'diachi', and/or 'dienthoai'");
+        }
+
+        // Gán madocgia làm _id
+        let _id = payload.madocgia;
+
+        const docgia = {
+            _id: _id, // Gán madocgia làm _id
+            holot: payload.holot,
+            ten: payload.ten,
+            ngaysinh: payload.ngaysinh,
+            phai: payload.phai,
+            diachi: payload.diachi,
+            dienthoai: payload.dienthoai
+        };
+
+        return docgia;
     }
 
-    const docgia = {
-        holot: payload.holot,
-        ten: payload.ten,
-        ngaysinh: payload.ngaysinh,
-        phai: payload.phai,
-        diachi: payload.diachi,
-        dienthoai: payload.dienthoai
-    };
+    async create(payload) {
+        try {
+            const docgia = this.extractDocGiaData(payload); // Trích xuất dữ liệu đã kiểm tra tính hợp lệ
 
-    return docgia;
-}
-
-async create(payload) {
-    try {
-        const docgia = this.extractDocGiaData(payload);
-        const result = await this.DocGia.findOneAndUpdate(
-            docgia,
-            {$set: docgia},
-            { returnDocument: 'after', upsert: true }
-        );
-        return result;
-    } catch (error) {
-        throw new Error(`Failed to create: ${error.message}`);
+            const result = await this.DocGia.findOneAndUpdate(
+                { _id: docgia._id }, // Sử dụng madocgia làm _id
+                { $set: docgia },
+                { returnDocument: 'after', upsert: true }
+            );
+            return result;
+        } catch (error) {
+            throw new Error(`Failed to create: ${error.message}`);
+        }
     }
-}
 
     async find(filter) {
         const cursor = await this.DocGia.find(filter);
@@ -45,36 +48,41 @@ async create(payload) {
 
     async findByName(name) {
         return await this.find({
-            ten: { $regex: new RegExp(new RegExp(name)), $options: 'i' }
+            ten: { $regex: new RegExp(name), $options: 'i' }
         });
     }
 
     async findById(id) {
         return await this.find({
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
+            _id: id, // Sử dụng madocgia làm _id
         });
     }
 
     async update(id, payload) {
-        const filter = {
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
-        };
-        const update = this.extractDocGiaData(payload);
-        const result = await this.DocGia.findOneAndUpdate(
-            filter,
-            { $set: update },
-            { returnDocument: 'after' }
-        );
-        return result;
+        try {
+            if (!id) {
+                throw new Error("Invalid 'id' format");
+            }
+
+            const filter = { _id: id }; // Sử dụng madocgia làm _id
+            const update = this.extractDocGiaData(payload);
+
+            const result = await this.DocGia.findOneAndUpdate(
+                filter,
+                { $set: update },
+                { returnDocument: 'after' }
+            );
+            return result;
+        } catch (error) {
+            throw new Error(`Failed to update: ${error.message}`);
+        }
     }
 
     async delete(id) {
         const filter = {
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
+            _id: id, // Sử dụng madocgia làm _id
         };
-        const result = await this.DocGia.findOneAndDelete(
-            filter
-        );
+        const result = await this.DocGia.findOneAndDelete(filter);
         return result;
     }
 

@@ -1,4 +1,8 @@
 const { ObjectId } = require('mongodb');
+const DocGiaService = require('./docgia.service');  // Importing the DocGiaService
+const SachService = require('./sach.service');      // Importing the SachService
+const NhanVienService = require('./nhanvien.service'); // Importing the NhanVienService
+const MongoDB = require('../utils/mongodb.util');
 
 class MuonSachService {
     constructor(client) {
@@ -6,31 +10,68 @@ class MuonSachService {
     }
 
     // Định nghĩa phương thức trích xuất dữ liệu mượn sách
-extractMuonSachData(payload) {
-    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
-    if (!payload.madocgia || !payload.masach || !payload.ngaymuon || !payload.ngaytra || !payload.manhanvien) {
-        throw new Error("Missing required fields: 'madocgia', 'masach', 'ngaymuon', 'ngaytra', and/or 'manhanvien'");
+    async extractMuonSachData(payload) {
+        // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+        if (!payload.madocgia || !payload.masach || !payload.ngaymuon || !payload.ngaytra || !payload.manhanvien) {
+            throw new Error("Missing required fields: 'madocgia', 'masach', 'ngaymuon', 'ngaytra', and/or 'manhanvien'");
+        }
+
+        // Kiểm tra xem madocgia có tồn tại không
+        const docgiaService = new DocGiaService(MongoDB.client);
+        const docgia = await docgiaService.findById(payload.madocgia);
+        if (docgia.length === 0) {
+            throw new Error(`Reader not found with id: ${payload.madocgia}`);
+        }
+
+        // Kiểm tra xem masach có tồn tại không
+        const sachService = new SachService(MongoDB.client);
+        const sach = await sachService.findById(payload.masach);
+        if (sach.length === 0) {
+            throw new Error(`Book not found with id: ${payload.masach}`);
+        }
+
+        // Kiểm tra xem manhanvien có tồn tại không
+        const nhanvienService = new NhanVienService(MongoDB.client);
+        const nhanvien = await nhanvienService.findById(payload.manhanvien);
+        if (nhanvien.length === 0) {
+            throw new Error(`Employee not found with id: ${payload.manhanvien}`);
+        }
+
+        const muonsach = {
+            madocgia: payload.madocgia,
+            masach: payload.masach,
+            ngaymuon: payload.ngaymuon,
+            ngaytra: payload.ngaytra,
+            manhanvien: payload.manhanvien
+        };
+
+        return muonsach;
     }
 
-    const muonsach = {
-        madocgia: payload.madocgia,
-        masach: payload.masach,
-        ngaymuon: payload.ngaymuon,
-        ngaytra: payload.ngaytra,
-        manhanvien: payload.manhanvien
-    };
-
-    return muonsach;
-}
-
-async create(payload) {
+    async create(payload) {
     try {
-        const muonsach = this.extractMuonSachData(payload);
+        // Tìm xem có tồn tại bản ghi với ngày mượn, mã độc giả và mã sách không
+        const existingRecord = await this.MuonSach.findOne({
+            ngaymuon: payload.ngaymuon,
+            madocgia: payload.madocgia,
+            masach: payload.masach
+        });
+
+        // Nếu đã tồn tại bản ghi, throw lỗi
+        if (existingRecord) {
+            throw new Error("Record already exists for this book, reader, and borrow date.");
+        }
+
+        // Trích xuất dữ liệu từ payload
+        const muonsach = await this.extractMuonSachData(payload);
+
+        // Tiến hành tạo hoặc cập nhật bản ghi mới
         const result = await this.MuonSach.findOneAndUpdate(
-            muonsach,
-            {$set: muonsach},
+            { _id: new ObjectId() },  // Thêm _id mới nếu là bản ghi mới
+            { $set: muonsach },
             { returnDocument: 'after', upsert: true }
         );
+
         return result;
     } catch (error) {
         throw new Error(`Failed to create: ${error.message}`);
@@ -52,7 +93,7 @@ async create(payload) {
         const filter = {
             _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
         };
-        const update = this.extractMuonSachData(payload);
+        const update = await this.extractMuonSachData(payload); // Thêm 'await' để đợi hoàn tất
         const result = await this.MuonSach.findOneAndUpdate(
             filter,
             { $set: update },

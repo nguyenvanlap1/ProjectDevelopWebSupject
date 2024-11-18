@@ -1,38 +1,41 @@
-const { ObjectId } = require('mongodb');
-
 class NhaXuatBanService {
-    constructor(client) {
+   constructor(client) {
         this.NhaXuatBan = client.db().collection('nhaxuatban');
     }
 
-    // Define methods below
+    // Phương thức trích xuất dữ liệu và kiểm tra tính hợp lệ
     extractNhaXuatBanData(payload) {
-    // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
-    if (!payload.tennxb || !payload.diachi) {
-        throw new Error("Missing required fields: 'tennxb' and/or 'diachi'");
+        // Kiểm tra nếu thiếu bất kỳ thuộc tính bắt buộc nào
+        if (!payload.tennxb || !payload.diachi || payload.manxb === undefined) {
+            throw new Error("Missing required fields: 'manxb', 'tennxb' and/or 'diachi'");
+        }
+
+        // Gán manxb làm _id
+        let _id = payload.manxb;
+
+        const nhaxuatban = {
+            _id: _id, // Gán manxb làm _id
+            tennxb: payload.tennxb,
+            diachi: payload.diachi,
+        };
+
+        return nhaxuatban;
     }
 
-    const nhaxuatban = {
-        tennxb: payload.tennxb,
-        diachi: payload.diachi
-    };
+    async create(payload) {
+        try {
+            const nhaxuatban = this.extractNhaXuatBanData(payload); // Trích xuất dữ liệu đã kiểm tra tính hợp lệ
 
-    return nhaxuatban;
+            const result = await this.NhaXuatBan.findOneAndUpdate(
+                { _id: nhaxuatban._id }, // Sử dụng manxb làm _id
+                { $set: nhaxuatban },
+                { returnDocument: 'after', upsert: true }
+            );
+            return result;
+        } catch (error) {
+            throw new Error(`Failed to create: ${error.message}`);
+        }
     }
-
-async create(payload) {
-    try {
-        const nhaxuatban = this.extractNhaXuatBanData(payload);
-        const result = await this.NhaXuatBan.findOneAndUpdate(
-            nhaxuatban,
-            {$set: nhaxuatban},
-            { returnDocument: 'after', upsert: true }
-        );
-        return result;
-    } catch (error) {
-        throw new Error(`Failed to create: ${error.message}`);
-    }
-}
 
     async find(filter) {
         const cursor = await this.NhaXuatBan.find(filter);
@@ -41,40 +44,42 @@ async create(payload) {
 
     async findByName(name) {
         return await this.find({
-            tennxb: { $regex: new RegExp(new RegExp(name)), $options: 'i' }
+            tennxb: { $regex: new RegExp(name), $options: 'i' }
         });
     }
 
     async findById(id) {
         return await this.find({
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
+            _id: id, // Sử dụng manxb làm _id
         });
     }
 
     async update(id, payload) {
         try {
-            const filter = {
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
-        };
-        const update = this.extractNhaXuatBanData(payload);
-        const result = await this.NhaXuatBan.findOneAndUpdate(
-            filter,
-            { $set: update },
-            { returnDocument: 'after' }
-        );
-        return result;
-       } catch(error) {
-        throw new Error(`Failed to update: ${error.message}`);
-       }
+            // Kiểm tra id hợp lệ
+            if (!id) {
+                throw new Error("Invalid 'id' format");
+            }
+
+            const filter = { _id: id }; // Sử dụng manxb làm _id
+            const update = this.extractNhaXuatBanData(payload);
+
+            const result = await this.NhaXuatBan.findOneAndUpdate(
+                filter,
+                { $set: update },
+                { returnDocument: 'after' }
+            );
+            return result;
+        } catch (error) {
+            throw new Error(`Failed to update: ${error.message}`);
+        }
     }
 
     async delete(id) {
         const filter = {
-            _id: ObjectId.isValid(id) ? ObjectId.createFromHexString(id) : null
+            _id: id, // Sử dụng manxb làm _id
         };
-        const result = await this.NhaXuatBan.findOneAndDelete(
-            filter
-        );
+        const result = await this.NhaXuatBan.findOneAndDelete(filter);
         return result;
     }
 
